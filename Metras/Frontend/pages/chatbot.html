@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- AI Assistant page: project-grounded chat with saved conversations. Script: js/chatbot.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>METRAS | AI Assistant</title>
+
+  <!-- Shared stylesheet for every page -->
+  <link rel="stylesheet" href="../css/styles.css">
+
+  <!-- Page logic: js/chatbot.js -->
+  <script type="module" src="../js/chatbot.js" defer></script>
+</head>
+<body>
+  <!-- Top bar: logo, mobile menu button and main navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <button class="icon-btn" id="btnMenu" aria-label="Open menu"><span class="hamburger"></span></button>
+      <a href="projects.html" class="logo-link"><img src="../assets/logo.png" alt="METRAS Logo" class="logo-img"></a>
+    </div>
+    <nav class="topnav">
+      <a class="navlink" href="projects.html">PROJECTS</a>
+      <a class="navlink" href="task-board.html" id="chatbotTasksLink">MY TASKS</a>
+      <a class="navlink active" href="chatbot.html">AI ASSISTANT</a>
+    </nav>
+  </header>
+
+  <!-- Main content -->
+  <main class="container chatbot-page">
+    <section class="chatbot-heading">
+      <div>
+        <h1 class="title">METRAS AI Assistant</h1>
+        <p class="subtitle">Select an accessible project, then type any question about its risks, mitigations, or your tasks.</p>
+      </div>
+      <button class="btn btn-secondary" id="newChatBtn" type="button" hidden>+ Start another chat</button>
+    </section>
+    <div class="chatbot-layout">
+
+      <!-- Project picker and conversation list -->
+      <aside class="card chatbot-sidebar">
+        <div class="chatbot-step"><span>1</span><div><strong>Choose a project</strong><p>Your private conversation opens automatically. No extra “new chat” step is required.</p></div></div>
+        <label class="label" for="projectSelect">Project you need help with</label>
+        <select class="input" id="projectSelect"><option value="">Loading your projects...</option></select>
+        <p class="chatbot-project-status" id="projectStatus">Select a project to start chatting.</p>
+        <div class="chatbot-history-head"><h2>Conversations</h2></div>
+        <div class="chatbot-session-list" id="sessionList"><p class="chatbot-empty">No project selected.</p></div>
+      </aside>
+
+      <!-- Chat panel: messages, suggested questions and the message box -->
+      <section class="card chatbot-panel">
+        <div class="chatbot-panel-head">
+          <div><h2 id="chatTitle">Choose a project to start</h2><p id="chatSubtitle">Your conversation will open automatically and remain saved.</p></div>
+        </div>
+        <div class="chatbot-messages" id="chatMessages" aria-live="polite">
+          <div class="chatbot-welcome"><div class="chatbot-welcome-icon">?</div><h3>Ask in your own words</h3><p>Choose your project on the left. METRAS opens your saved private chat automatically, and the buttons below are optional examples.</p></div>
+        </div>
+        <div class="chatbot-suggestions" id="suggestions" hidden>
+          <button type="button" id="tasksSuggestion">
+  Show my assigned tasks and deadlines
+</button>
+          <button type="button">Summarize this project</button>
+          <button type="button">What is the highest risk?</button>
+          <button type="button">Suggest mitigation for the top risk</button>
+        </div>
+
+        <!-- Message box -->
+        <form class="chatbot-composer" id="chatForm">
+          <textarea id="chatInput" rows="2" maxlength="2000" placeholder="Select a project first..." disabled></textarea>
+          <button class="btn btn-primary" id="sendChatBtn" type="submit" disabled>Send</button>
+        </form>
+        <p class="chatbot-disclaimer">METRAS provides decision support. CVE matches do not confirm that a vulnerability exists.</p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Mobile navigation drawer (opened by the menu button) and its backdrop -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head"><div class="drawer-title">Menu</div><button class="icon-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button></div>
+    <div class="drawer-body">
+      <a href="projects.html" class="drawer-link">Projects</a>
+      <a href="task-board.html" class="drawer-link" id="drawerTasks">My Tasks</a>
+      <a href="chatbot.html" class="drawer-link active">AI Assistant</a>
+      <a href="settings.html" class="drawer-link">Settings</a>
+      <a href="#" class="drawer-link" id="drawerLogout">Logout</a>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div><div class="footer-logo">METRAS</div><p class="footer-tagline">AI-powered requirements risk analysis platform</p></div>
+      </div>
+      <div class="footer-right"><p>Built by IT Students</p><p>© 2026 METRAS</p></div>
+    </div>
+  </footer>
+</body>
+</html>

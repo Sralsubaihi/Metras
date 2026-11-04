@@ -1,0 +1,166 @@
+<!doctype html>
+<!-- Before/after comparison dashboard for one project (leader). Scripts: Chart.js + js/compare.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METRAS | Compare Versions</title>
+
+  <!-- Shared stylesheet for every page -->
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Chart.js library for the dashboard charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+  <!-- Page logic: js/compare.js -->
+  <script type="module" src="../js/compare.js" defer></script>
+</head>
+<body>
+  <!-- Top bar: logo, mobile menu button and main navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <button class="icon-btn" id="btnMenu" aria-label="Open menu"><span class="hamburger"></span></button>
+      <a href="projects.html" class="logo-link"><img src="../assets/logo.png" alt="METRAS Logo" class="logo-img"></a>
+    </div>
+    <nav class="topnav">
+      <a class="navlink" href="projects.html">PROJECTS</a>
+      <a class="navlink active" href="leader-tasks.html">TASK BOARD</a>
+      <a class="navlink" href="chatbot.html">AI ASSISTANT</a>
+    </nav>
+  </header>
+
+  <!-- Sub bar: page tabs / active project -->
+  <section class="subbar"><div class="projects"><a class="pill pill-active task-back-link" id="backToProjectTasks" href="leader-tasks.html">← Back to Project Tasks</a></div></section>
+
+  <!-- Main content -->
+  <main class="container">
+    <section class="card upload-card">
+      <div class="project-tasks-heading">
+        <div>
+          <p class="task-eyebrow">BEFORE &amp; AFTER</p>
+          <h1 class="title" id="compareProjectName">Loading project...</h1>
+          <p class="subtitle">See how the requirements set has improved since analysis started.</p>
+        </div>
+      </div>
+
+      <!-- Dashboard (shown once compare.js has loaded the data) -->
+      <div id="compareContent" hidden>
+
+        <!-- Summary cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0;">
+          <div style="background:var(--card-2);border-radius:14px;padding:16px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 6px;">Total requirements</p>
+            <p style="font-size:26px;font-weight:900;margin:0;" id="statTotal">—</p>
+          </div>
+          <div style="background:var(--card-2);border-radius:14px;padding:16px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 6px;">Fix approved <span class="info-icon" id="resolvedInfoIcon" tabindex="0" role="button" aria-label="What does this mean?">i</span></p>
+            <p style="font-size:26px;font-weight:900;margin:0;color:#6ee7a8;" id="statResolved">—</p>
+          </div>
+          <div style="background:var(--card-2);border-radius:14px;padding:16px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 6px;">No fix yet</p>
+            <p style="font-size:26px;font-weight:900;margin:0;color:var(--danger);" id="statUnresolved">—</p>
+          </div>
+          <div style="background:var(--card-2);border-radius:14px;padding:16px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 6px;">Estimated risk reduction <span class="info-icon" id="riskInfoIcon" tabindex="0" role="button" aria-label="How is this calculated?">i</span></p>
+            <p style="font-size:26px;font-weight:900;margin:0;color:var(--primary-2);" id="statRiskReduction">—</p>
+          </div>
+          <div style="background:var(--card-2);border-radius:14px;padding:16px;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 6px;">New risks detected <span class="info-icon" id="newRiskInfoIcon" tabindex="0" role="button" aria-label="What does this mean?">i</span></p>
+            <p style="font-size:26px;font-weight:900;margin:0;color:var(--danger);" id="statNewRisks">—</p>
+          </div>
+        </div>
+
+        <!-- Overall security score gauge -->
+        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:24px;align-items:center;margin-bottom:28px;background:var(--card-2);border-radius:16px;padding:20px;">
+          <div style="text-align:center;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 4px;">Overall security score <span class="info-icon" id="scoreInfoIcon" tabindex="0" role="button" aria-label="How is this calculated?">i</span></p>
+            <div style="position:relative;width:100%;max-width:220px;height:130px;margin:0 auto;">
+              <canvas id="securityGauge" role="img" aria-label="Gauge chart showing the overall security score for this project"></canvas>
+              <div id="securityScoreValue" style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:28px;font-weight:900;">—</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+            This score blends three things: how much of the requirement set has an approved fix, how much
+            estimated risk has been removed, and how many of those approved fixes passed the new-risk check
+            cleanly. It's a quick read on overall progress, not a certification that the project is secure.
+          </div>
+        </div>
+
+        <div style="margin-bottom:28px;">
+
+          <!-- Charts -->
+          <h2 style="font-size:14px;margin:0 0 10px;">Resolution timeline</h2>
+          <div style="position:relative;width:100%;height:220px;">
+            <canvas id="resolutionTimeline" role="img" aria-label="Line chart showing cumulative approved fixes over time"></canvas>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-bottom:28px;">
+          <div>
+            <h2 style="font-size:14px;margin:0 0 10px;">By severity</h2>
+            <div id="severityLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--muted);"></div>
+            <div style="position:relative;width:100%;height:220px;">
+              <canvas id="severityBar" role="img" aria-label="Bar chart of fix status by severity level"></canvas>
+            </div>
+          </div>
+          <div>
+            <h2 style="font-size:14px;margin:0 0 10px;">By impact</h2>
+            <div id="impactLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--muted);"></div>
+            <div style="position:relative;width:100%;height:220px;">
+              <canvas id="impactBar" role="img" aria-label="Bar chart of fix status by impact level"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:28px;max-width:calc(50% - 12px);">
+          <h2 style="font-size:14px;margin:0 0 10px;">By likelihood</h2>
+          <div id="likelihoodLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--muted);"></div>
+          <div style="position:relative;width:100%;height:220px;">
+            <canvas id="likelihoodBar" role="img" aria-label="Bar chart of fix status by likelihood level"></canvas>
+          </div>
+        </div>
+
+        <div>
+          <h2 style="font-size:14px;margin:0 0 10px;">Task status</h2>
+          <div id="taskStatusLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--muted);"></div>
+          <div style="position:relative;width:100%;height:220px;max-width:420px;">
+            <canvas id="taskStatusDonut" role="img" aria-label="Doughnut chart of task status breakdown"></canvas>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;">
+
+          <!-- Approved fixes: clean vs still risky, with the flagged-items list -->
+          <h2 style="font-size:14px;margin:0 0 4px;">Approved fixes — new-risk check <span class="info-icon" id="newRiskChartInfoIcon" tabindex="0" role="button" aria-label="How is this decided?">i</span></h2>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">Sorted with the most severe new risks first.</p>
+          <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:24px;align-items:start;">
+            <div>
+              <div id="newRiskLegend" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;color:var(--muted);"></div>
+              <div style="position:relative;width:100%;height:200px;max-width:300px;">
+                <canvas id="newRiskDonut" role="img" aria-label="Doughnut chart of approved fixes with no new Critical or High risk versus those flagged for a new risk"></canvas>
+              </div>
+            </div>
+            <div>
+              <div id="flaggedList" style="display:flex;flex-direction:column;gap:14px;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Shown instead of the dashboard when there is nothing to compare -->
+      <div id="compareEmpty" class="table-empty" hidden>No analyzed requirements yet. Run an analysis first, then come back here.</div>
+    </section>
+  </main>
+
+  <!-- Mobile navigation drawer (opened by the menu button) and its backdrop -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head"><div class="drawer-title">Menu</div><button class="icon-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button></div>
+    <div class="drawer-body"><a href="projects.html" class="drawer-link">Projects</a><a href="leader-tasks.html" class="drawer-link active">Task Board</a><a href="chatbot.html" class="drawer-link">AI Assistant</a><a href="settings.html" class="drawer-link">Settings</a><a href="login.html" class="drawer-link logout-link">Logout</a></div>
+  </aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <!-- Footer -->
+  <footer class="footer"><div class="footer-container"><div class="footer-left"><div class="footer-logo">METRAS</div><p class="footer-tagline">AI-powered requirements risk analysis platform</p></div><div class="footer-right"><p>Built by IT Students</p><p>© 2026 METRAS</p></div></div></footer>
+</body>
+</html>

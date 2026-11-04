@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- Shared task workspace: draft the secure requirement and mitigation, team notes, submit for review. Script: js/task-work.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METRAS | Task Workspace</title>
+
+  <!-- Shared stylesheet for every page -->
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Page logic: js/task-work.js -->
+  <script type="module" src="../js/task-work.js" defer></script>
+</head>
+<body>
+  <!-- Top bar: logo, mobile menu button and main navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <button class="icon-btn" id="btnMenu" aria-label="Open menu"><span class="hamburger"></span></button>
+      <a href="projects.html" class="logo-link"><img src="../assets/logo.png" alt="METRAS Logo" class="logo-img"></a>
+    </div>
+    <nav class="topnav">
+      <a class="navlink" href="projects.html">PROJECTS</a>
+      <a class="navlink active" href="task-board.html">MY TASKS</a>
+      <a class="navlink" href="chatbot.html" id="taskChatNav">AI ASSISTANT</a>
+    </nav>
+  </header>
+
+  <!-- Sub bar: page tabs / active project -->
+  <section class="subbar">
+    <div class="projects"><a class="pill pill-active task-back-link" href="task-board.html">← My Tasks</a></div>
+  </section>
+
+  <!-- Main content -->
+  <main class="container">
+
+    <!-- Loading placeholder -->
+    <div id="taskLoading" class="card task-work-card"><div class="empty-state">Loading task...</div></div>
+
+    <!-- Workspace (shown once the task is loaded) -->
+    <section id="taskWorkspace" class="card task-work-card" hidden>
+      <div class="task-work-heading">
+        <div>
+          <p class="task-eyebrow">TASK WORKSPACE</p>
+          <h1 class="title" id="workTaskTitle">Task</h1>
+          <p class="subtitle" id="workProjectName">Project</p>
+        </div>
+        <div id="workStatus"></div>
+      </div>
+
+      <!-- Leader feedback (shown when changes were requested) -->
+      <div id="leaderFeedbackBox" class="task-feedback" hidden>
+        <strong>Leader feedback</strong>
+        <p id="leaderFeedbackText"></p>
+      </div>
+
+      <!-- Banner shown when a teammate saved a newer draft -->
+      <div id="draftUpdateBanner" class="task-feedback" hidden style="border-left:3px solid #5861b5;">
+        <strong>A teammate updated this draft</strong>
+        <p>Someone else saved changes since you opened this page.
+          <button id="loadLatestDraft" class="link-btn" type="button" style="color:#5861b5;font-weight:800;">Load their latest version →</button>
+        </p>
+      </div>
+
+      <!-- Task facts -->
+      <div class="task-info-grid">
+        <div class="task-info-item"><span>Priority</span><strong id="workPriority">—</strong></div>
+        <div class="task-info-item"><span>Deadline</span><strong id="workDeadline">—</strong></div>
+        <div class="task-info-item"><span>Severity</span><strong id="workSeverity">—</strong></div>
+        <div class="task-info-item"><span>CVE</span><strong id="workCve">—</strong></div>
+      </div>
+
+      <!-- Visible audit record when the project leader extends the deadline -->
+      <div id="deadlineExtensionBox" class="task-feedback deadline-audit-detail" hidden>
+        <strong>Deadline extension record</strong>
+        <p id="deadlineExtensionText"></p>
+      </div>
+
+      <div class="task-work-section">
+
+        <!-- Original requirement and detected risk -->
+        <h2>Detected Risk and Original Requirement</h2>
+        <div class="task-readonly" id="workDescription">—</div>
+      </div>
+
+      <div class="task-work-section">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
+          <label class="label" for="revisedRequirement" style="margin-bottom:0;">Revised Secure Requirement (shared) <span aria-hidden="true">*</span></label>
+          <span id="lastEditedNote" class="field-help" style="margin:0;"></span>
+        </div>
+        <p class="field-help">This is a shared draft — everyone assigned to this task reads and edits the same text, so work on it together rather than writing separate versions.</p>
+        <textarea id="revisedRequirement" class="textarea textarea-lg" rows="7" placeholder="The system shall..."></textarea>
+      </div>
+
+      <div class="task-work-section">
+        <label class="label" for="mitigationExplanation">Mitigation Explanation (shared) <span aria-hidden="true">*</span></label>
+        <p class="field-help">Explain what the team changed and how it reduces the risk.</p>
+        <textarea id="mitigationExplanation" class="textarea textarea-lg" rows="6" placeholder="Explain the security controls and improvements..."></textarea>
+      </div>
+
+      <div class="task-work-section">
+
+        <!-- Team notes thread -->
+        <h2>Team Notes</h2>
+        <p class="field-help">Coordinate with everyone else assigned to this task — who's doing what, questions, decisions.</p>
+        <div id="discussionList" style="display:flex;flex-direction:column;gap:10px;max-height:220px;overflow-y:auto;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <textarea id="discussionInput" class="textarea" rows="2" placeholder="Write a note to your teammates..." style="flex:1;"></textarea>
+          <button id="postNote" class="btn btn-secondary" type="button">Post</button>
+        </div>
+      </div>
+
+      <div id="workError" class="error-message" hidden></div>
+      <div id="workSuccess" class="success-message" hidden></div>
+
+      <!-- Who has submitted (shown when several members share the task) -->
+      <div id="submissionStatus" class="task-feedback" hidden style="border-left:3px solid #6ee7a8;"></div>
+
+      <div class="task-work-actions" id="workActions">
+        <a href="task-board.html" class="btn btn-secondary">Back</a>
+        <a href="chatbot.html" class="btn btn-secondary" id="taskChatButton">Ask AI Assistant</a>
+        <button id="saveDraft" class="btn btn-secondary" type="button">Save Progress</button>
+        <button id="submitReview" class="btn btn-primary" type="button">Submit for Review</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile navigation drawer (opened by the menu button) and its backdrop -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head"><div class="drawer-title">Menu</div><button class="icon-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button></div>
+    <div class="drawer-body">
+      <a href="projects.html" class="drawer-link">Projects</a>
+      <a href="task-board.html" class="drawer-link active">My Tasks</a>
+      <a href="chatbot.html" class="drawer-link" id="taskChatDrawer">AI Assistant</a>
+      <a href="settings.html" class="drawer-link">Settings</a>
+      <a href="login.html" class="drawer-link logout-link">Logout</a>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container"><div class="footer-left"><div class="footer-logo">METRAS</div><p class="footer-tagline">AI-powered requirements risk analysis platform</p></div><div class="footer-right"><p>Built by IT Students</p><p>© 2026 METRAS</p></div></div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- Leader Task Board: pick a project to manage its tasks. Script: js/leader-tasks.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METRAS | Project Tasks</title>
+
+  <!-- Shared stylesheet for every page -->
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Page logic: js/leader-tasks.js -->
+  <script type="module" src="../js/leader-tasks.js" defer></script>
+</head>
+<body>
+  <!-- Top bar: logo, mobile menu button and main navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <button class="icon-btn" id="btnMenu" aria-label="Open menu"><span class="hamburger"></span></button>
+      <a href="projects.html" class="logo-link"><img src="../assets/logo.png" alt="METRAS Logo" class="logo-img"></a>
+    </div>
+    <nav class="topnav">
+      <a class="navlink" href="projects.html">PROJECTS</a>
+      <a class="navlink active" href="leader-tasks.html">TASK BOARD</a>
+      <a class="navlink" href="chatbot.html">AI ASSISTANT</a>
+    </nav>
+  </header>
+
+  <!-- Sub bar: page tabs / active project -->
+  <section class="subbar"><div class="projects"><button class="pill pill-active">Task Board</button></div></section>
+
+  <!-- Main content -->
+  <main class="container">
+    <section class="card upload-card">
+      <div class="section-head">
+        <h1 class="title">Select a Project</h1>
+        <p class="subtitle">Choose a project to monitor its tasks, deadlines, and review requests.</p>
+      </div>
+
+      <!-- Project cards with task counters (rendered by leader-tasks.js) -->
+      <div id="taskProjectsGrid" class="leader-project-grid"><div class="empty-state">Loading projects...</div></div>
+    </section>
+  </main>
+
+  <!-- Mobile navigation drawer (opened by the menu button) and its backdrop -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head"><div class="drawer-title">Menu</div><button class="icon-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button></div>
+    <div class="drawer-body">
+      <a href="projects.html" class="drawer-link">Projects</a>
+      <a href="leader-tasks.html" class="drawer-link active">Task Board</a>
+      <a href="chatbot.html" class="drawer-link">AI Assistant</a>
+      <a href="settings.html" class="drawer-link">Settings</a>
+      <a href="login.html" class="drawer-link logout-link">Logout</a>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <!-- Footer -->
+  <footer class="footer"><div class="footer-container"><div class="footer-left"><div class="footer-logo">METRAS</div><p class="footer-tagline">AI-powered requirements risk analysis platform</p></div><div class="footer-right"><p>Built by IT Students</p><p>© 2026 METRAS</p></div></div></footer>
+</body>
+</html>
