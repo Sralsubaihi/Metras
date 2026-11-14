@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- Sign-in page. Script: js/login.js -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METRAS | Login</title>
+
+    <!-- Browser tab icon -->
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+    <!-- Shared stylesheet for every page -->
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Firebase compat SDK (not used by the page script, which imports the modular SDK itself) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- Page logic: js/login.js -->
+    <script type="module" src="../js/login.js" defer></script>
+</head>
+<body class="login-body">
+
+    <!-- Top bar: logo, mobile menu button and main navigation -->
+    <header class="topbar">
+        <div class="brand">
+            <a href="index.html" class="logo-link">
+                <img src="../assets/logo.png" alt="METRAS Logo" class="logo-img">
+            </a>
+        </div>
+        <nav class="topnav">
+            <a class="navlink" href="index.html">HOME</a>
+            <a class="navlink active" href="login.html">LOGIN</a>
+            <a class="navlink" href="signup.html">SIGN UP</a>
+        </nav>
+    </header>
+
+    <!-- Main content -->
+    <main class="login-main">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your METRAS account</p>
+            </div>
+
+            <!-- Sign-in form -->
+            <form id="loginForm" class="login-form">
+                <div class="field">
+                    <label class="label" for="email">Email Address</label>
+                    <input type="email" id="email" class="input" placeholder="name@company.com" required>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="password">Password</label>
+                    <input type="password" id="password" class="input" placeholder="Enter your password" required>
+                </div>
+
+                <div style="text-align:right;margin-top:-8px;">
+                    <a href="forgot-password.html" style="color:var(--primary-2);font-size:13px;font-weight:700;">Forgot Password?</a>
+                </div>
+
+                <div id="loginError" class="error-message" hidden></div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                    Sign In
+                </button>
+
+                <div class="login-loading" id="loginLoading" style="display:none;">
+                    <div class="spinner"></div>
+                    <span>Authenticating...</span>
+                </div>
+            </form>
+
+            <div class="login-footer">
+                <p>New user? <a href="signup.html" style="color:var(--primary-2);font-weight:800;">Create your account →</a></p>
+                <p style="margin-top:8px;font-size:12px;color:var(--muted);">Your email must be registered by the admin first.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <div class="footer-logo">METRAS</div>
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="login.html">Login</a>
+                <a href="signup.html">Sign Up</a>
+            </div>
+            <div class="footer-right">
+                <p>© 2026 METRAS</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
