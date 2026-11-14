@@ -1,0 +1,72 @@
+<!doctype html>
+<!-- Member's tasks for one project. Script: js/member-project-tasks.js -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METRAS | Project Tasks</title>
+
+    <!-- Browser tab icon -->
+    <link rel="icon" href="../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <!-- Shared stylesheet for every page -->
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Page logic: js/member-project-tasks.js -->
+  <script type="module" src="../js/member-project-tasks.js" defer></script>
+</head>
+<body>
+  <!-- Top bar: logo, mobile menu button and main navigation -->
+  <header class="topbar">
+    <div class="brand"><button class="icon-btn" id="btnMenu" aria-label="Open menu"><span class="hamburger"></span></button><a href="projects.html" class="logo-link"><img src="../assets/logo.png" alt="METRAS Logo" class="logo-img"></a></div>
+    <nav class="topnav"><a class="navlink" href="projects.html">PROJECTS</a><a class="navlink active" href="task-board.html">MY TASKS</a><a class="navlink" href="chatbot.html" id="projectChatLink">AI ASSISTANT</a></nav>
+  </header>
+
+  <!-- Sub bar: page tabs / active project -->
+  <section class="subbar"><div class="projects"><a class="pill pill-active task-back-link" href="task-board.html">← My Task Projects</a></div></section>
+
+  <!-- Main content -->
+  <main class="container">
+    <section class="card upload-card">
+      <div class="project-tasks-heading">
+        <div><p class="task-eyebrow">MY PROJECT TASKS</p><h1 class="title" id="memberProjectName">Loading project...</h1><p class="subtitle">Tasks assigned to you by the project leader.</p></div>
+      </div>
+
+      <div class="one-bar project-task-filters"><div class="bar-section">
+        <button class="pill pill-active" data-filter="All" type="button">All</button><button class="pill" data-filter="Assigned" type="button">Assigned</button><button class="pill" data-filter="In Progress" type="button">In Progress</button><button class="pill" data-filter="For Review" type="button">For Review</button><button class="pill" data-filter="Done" type="button">Done</button>
+      </div></div>
+
+      <!-- Task table (rows rendered by member-project-tasks.js) -->
+      <div class="task-table-wrap"><table class="leader-task-table">
+        <thead><tr><th>Task</th><th>Assigned To</th><th>Status</th><th>Work Update</th><th>Deadline <span class="info-icon" id="deadlineLegendIcon" tabindex="0" role="button" aria-label="What do the deadline colors mean?">i</span></th><th>Action</th></tr></thead>
+        <tbody id="memberProjectTasksBody"><tr><td colspan="6" class="table-empty">Loading tasks...</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+
+  <!-- Read-only task details modal -->
+  <div class="modal" id="memberTaskViewModal" style="display:none;">
+    <div class="modal-content review-modal-content">
+      <div class="modal-header"><h2 id="memberViewTitle">Task Details</h2><button class="modal-close" id="closeMemberView" type="button">&times;</button></div>
+      <div class="modal-body">
+        <div class="review-detail"><span>Assigned to</span><p id="memberViewAssignee">—</p></div>
+        <div class="collaboration-meta"><div><span>Status</span><strong id="memberViewStatus">—</strong></div><div><span>Last updated</span><strong id="memberViewUpdated">—</strong></div></div>
+        <div class="review-detail deadline-audit-detail" id="memberDeadlineExtensionBox" hidden><span>Deadline extension record</span><p id="memberDeadlineExtension">—</p></div>
+        <div class="review-detail"><span>Original requirement and risk</span><p id="memberViewOriginal">—</p></div>
+        <div class="review-detail"><span>Revised secure requirement</span><p id="memberViewRevised">Not submitted yet.</p></div>
+        <div class="review-detail"><span>Mitigation explanation</span><p id="memberViewMitigation">Not submitted yet.</p></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" id="closeMemberViewFooter" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Mobile navigation drawer (opened by the menu button) and its backdrop -->
+  <aside class="drawer" id="drawer" aria-hidden="true"><div class="drawer-head"><div class="drawer-title">Menu</div><button class="icon-btn" id="btnCloseDrawer" aria-label="Close menu">✕</button></div><div class="drawer-body"><a href="projects.html" class="drawer-link">Projects</a><a href="task-board.html" class="drawer-link active">My Tasks</a><a href="chatbot.html" class="drawer-link" id="drawerProjectChatLink">AI Assistant</a><a href="settings.html" class="drawer-link">Settings</a><a href="login.html" class="drawer-link logout-link">Logout</a></div></aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <!-- Footer -->
+  <footer class="footer"><div class="footer-container"><div class="footer-left"><div class="footer-logo">METRAS</div><p class="footer-tagline">AI-powered requirements risk analysis platform</p></div><div class="footer-right"><p>Built by IT Students</p><p>© 2026 METRAS</p></div></div></footer>
+</body>
+</html>

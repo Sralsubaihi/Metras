@@ -1,0 +1,188 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+    function verified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    // Administrator account (Firebase Authentication UID).
+    function admin() {
+      return verified() && request.auth.uid == 'CBrhz1febLPzxpyZ5bQtWU1f6n03';
+    }
+    function email() { return request.auth.token.email.lower(); }
+
+    // accessByEmail/<lowercase email> = { role, isActive, userDocId } mirrors the user.
+    function access() {
+      return get(/databases/$(database)/documents/accessByEmail/$(email())).data;
+    }
+    function active() {
+      return verified() && exists(/databases/$(database)/documents/accessByEmail/$(email()))
+        && access().isActive == true && access().role in ['leader', 'team_member'];
+    }
+    function leader() { return active() && access().role == 'leader'; }
+
+    function participant(data) {
+      return active() && (data.leaderEmail == email() || email() in data.get('memberEmails', []));
+    }
+    function projectParticipant(id) {
+      return exists(/databases/$(database)/documents/projects/$(id))
+        && participant(get(/databases/$(database)/documents/projects/$(id)).data);
+    }
+    function projectLeader(id) {
+      return leader() && exists(/databases/$(database)/documents/projects/$(id))
+        && get(/databases/$(database)/documents/projects/$(id)).data.leaderEmail == email();
+    }
+    function assigned(data) {
+      return email() in data.get('assignedEmails', [])
+        || (data.get('assignedTo', {}) is map && data.get('assignedTo', {}).get('email', '') == email());
+    }
+
+    // ------------------------------------------------------------ accessByEmail
+    match /accessByEmail/{address} {
+      allow read: if admin() || (verified() && address == email());
+      allow create, update: if admin()
+        && request.resource.data.keys().hasOnly(['role', 'isActive', 'userDocId'])
+        && request.resource.data.role in ['leader', 'team_member']
+        && request.resource.data.isActive is bool
+        && request.resource.data.userDocId is string;
+      allow delete: if admin();
+    }
+
+    // -------------------------------------------------------------------- users
+    match /users/{id} {
+      // A user can read their own record after verified sign-in. Leaders may read the
+      // active team-member directory used by the member selectors.
+      allow read: if admin()
+        || (verified() && resource.data.email == email())
+        || (leader() && resource.data.role == 'team_member' && resource.data.isActive == true);
+      allow create, delete: if admin();
+      allow update: if admin()
+        || (active() && resource.data.email == email()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 200);
+    }
+
+    // ----------------------------------------------------------------- projects
+    match /projects/{id} {
+      allow read: if admin() || participant(resource.data);
+      allow create: if leader() && request.resource.data.leaderEmail == email()
+        && request.resource.data.memberEmails is list && request.resource.data.members is list
+        && request.resource.data.name is string && request.resource.data.status == 'Draft';
+      allow update: if projectLeader(id)
+        && request.resource.data.leaderEmail == resource.data.leaderEmail
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'description', 'members', 'memberEmails', 'status', 'analyzedAt',
+          'updatedAt', 'approvedRequirements'
+        ]);
+      allow delete: if projectLeader(id);
+    }
+
+    // ---------------------------------------------------------- project_results
+    match /project_results/{id} {
+      allow get: if admin() || projectParticipant(id) || projectParticipant(resource.data.projectId);
+      allow list: if admin() || projectParticipant(resource.data.projectId);
+      allow create: if projectLeader(request.resource.data.projectId)
+        && request.resource.data.results is list;
+      allow update: if projectLeader(resource.data.projectId)
+        && request.resource.data.projectId == resource.data.projectId
+        && request.resource.data.results is list;
+      allow delete: if projectLeader(resource.data.projectId);
+
+      // Each analysis is an immutable snapshot kept beneath its project result.
+      match /versions/{versionId} {
+        allow read: if admin() || projectParticipant(id);
+        allow create: if projectLeader(id)
+          && request.resource.data.projectId == id
+          && request.resource.data.results is list
+          && request.resource.data.versionNumber is int
+          && request.resource.data.versionNumber > 0
+          && request.resource.data.createdBy == email();
+        allow update, delete: if false;
+      }
+    }
+
+    // -------------------------------------------------------------------- tasks
+    match /tasks/{id} {
+      function validNote() {
+        let previous = resource.data.get('discussion', []);
+        let next = request.resource.data.discussion;
+        return next is list && next.size() == previous.size() + 1
+          && next == previous.concat([next[previous.size()]])
+          && next[previous.size()].authorEmail == email()
+          && next[previous.size()].text is string
+          && next[previous.size()].text.size() > 0
+          && next[previous.size()].text.size() <= 10000;
+      }
+      function memberWork() {
+        let changed = request.resource.data.diff(resource.data).affectedKeys();
+        return active() && assigned(resource.data) && projectParticipant(resource.data.projectId)
+          && resource.data.status in ['Assigned', 'In Progress']
+          && request.resource.data.status in ['In Progress', 'For Review', 'Assigned']
+          && changed.hasOnly(['status', 'startedAt', 'updatedAt', 'discussion',
+            'revisedRequirement', 'mitigationExplanation', 'lastEditedBy', 'lastEditedByName',
+            'lastEditedAt', 'submittedBy'])
+          && (!changed.hasAny(['submittedBy']) || request.resource.data.submittedBy is list)
+          && (!changed.hasAny(['lastEditedBy']) || request.resource.data.lastEditedBy == email())
+          && (!changed.hasAny(['discussion']) || validNote())
+          && (request.resource.data.status != 'For Review' || (
+            request.resource.data.revisedRequirement is string
+            && request.resource.data.revisedRequirement.size() > 0
+            && request.resource.data.mitigationExplanation is string
+            && request.resource.data.mitigationExplanation.size() > 0));
+      }
+      function leaderTaskUpdate() {
+        return projectLeader(resource.data.projectId)
+          && request.resource.data.projectId == resource.data.projectId
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'leaderFeedback', 'changeRequested', 'changeRequestedAt', 'reviewedAt',
+            'updatedAt', 'assignedTo', 'assignedEmails', 'deadline', 'deadlineExtensionHistory',
+            'latestDeadlineExtension', 'deadlineUpdatedAt', 'deadlineUpdatedBy', 'discussion'
+          ]);
+      }
+
+      // Assignees keep read access to their historical tasks; disabling the account
+      // revokes all task access.
+      allow read: if admin() || (active() && (assigned(resource.data)
+        || resource.data.createdBy == email() || projectParticipant(resource.data.projectId)));
+      allow create: if projectLeader(request.resource.data.projectId)
+        && request.resource.data.createdBy == email()
+        && request.resource.data.status == 'Assigned'
+        && request.resource.data.assignedEmails is list
+        && request.resource.data.assignedEmails.size() > 0
+        && request.resource.data.assignedEmails.toSet().hasOnly(
+          get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.memberEmails
+        );
+      allow update: if leaderTaskUpdate() || memberWork();
+      allow delete: if projectLeader(resource.data.projectId);
+    }
+
+    // ----------------------------------------------------------- chatbotSessions
+    match /chatbotSessions/{id} {
+      allow read: if active() && resource.data.userId == request.auth.uid;
+      allow create: if active() && request.resource.data.userId == request.auth.uid
+        && request.resource.data.userEmail == email()
+        && projectParticipant(request.resource.data.projectId);
+      allow update: if active() && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'updatedAt']);
+      allow delete: if active() && resource.data.userId == request.auth.uid;
+
+      match /messages/{messageId} {
+        function owner() {
+          return active()
+            && get(/databases/$(database)/documents/chatbotSessions/$(id)).data.userId == request.auth.uid;
+        }
+        allow read: if owner();
+        // Assistant messages are client-saved history, not trusted server evidence.
+        allow create: if owner() && request.resource.data.role in ['user', 'assistant']
+          && request.resource.data.content is string && request.resource.data.content.size() <= 100000;
+        allow update, delete: if false;
+      }
+    }
+
+    // Everything else is denied by default.
+  }
+}
